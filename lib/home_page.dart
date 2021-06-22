@@ -3,31 +3,65 @@ import 'package:movie/moveScreen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
-class HomePage extends StatelessWidget {
-  final String url = 'https://api.themoviedb.org/3/search/movie?api_key=3a7e12a9b85f1b519fe98f7b8eb42721&query=';
+class HomePage extends StatefulWidget {
+  const HomePage({Key key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<movie> screenMovies=[];
   var _controller = TextEditingController();
+  var picPath;
+  var moveName;
+  var story;
 
-  Future getsearch(String searchQuery) async {
-    http.Response response = await http.get(Uri.https('api.themoviedb.org',
-        '/3/search/movie&api_key=3a7e12a9b85f1b519fe98f7b8eb42721&query=$searchQuery&page=1'));
-    print(response.statusCode);
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      trend();
+    });
 
+    print(screenMovies.length);
+  }
+  Future<List<movie>> trend() async{
+    http.Response response = await http.get(Uri.parse('https://api.themoviedb.org/3/trending/movie/day?api_key=5e2cda9626e1b5ce284c5ad6dd1cedc9'));
     var jsonResponse =
     convert.jsonDecode(response.body);
-    var itemCount = jsonResponse['poster_path'];
-    print(itemCount);
+    getdata(jsonResponse);
+  }
 
+  Future getsearch(String searchQuery) async {
+    http.Response response = await http.get(Uri.parse('https://api.themoviedb.org/3/search/movie?api_key=5e2cda9626e1b5ce284c5ad6dd1cedc9&query=$searchQuery'));
+    var jsonResponse =
+    convert.jsonDecode(response.body);
+    getdata(jsonResponse);
+
+  }
+
+  List<movie> getdata(var json){
+
+    if(!screenMovies.isEmpty){
+    screenMovies.clear();
+    }
+    for(int i=0;i<json['results'].length-1;i++){
+      screenMovies.add(movie(json['results'][i]['poster_path'],json['results'][i]['title'],json['results'][i]['overview']));
+    }
+    print(screenMovies.length);
   }
 
   @override
   Widget build(BuildContext context) {
+
     double scall = MediaQuery
         .of(context)
         .devicePixelRatio;
     return Scaffold(
         body: SafeArea(
           child: Column(
-             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextField(
                 controller: _controller,
@@ -39,7 +73,10 @@ class HomePage extends StatelessWidget {
                   suffixIcon: IconButton(
                     icon: Icon(Icons.search),
                     onPressed:() {
-                      getsearch(_controller.text);
+                      setState(() {
+                        getsearch(_controller.text);
+                      });
+
 
                     },
 
@@ -55,21 +92,7 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: GridView.count(
                     crossAxisCount: 2,
-
-                    children: [
-
-                      Expanded(child: movie('forrest.jpg', 'forrestGamp')),
-                 Expanded(child: movie('1917.jpg', '1917')),
-
-                  Expanded(child: movie('avenger.jpg', 'avenger')),
-                  Expanded(child: movie('fight.jpg', 'fight club')),
-
-                  Expanded(child: movie('seven.jpg', 'seven')),
-                  Expanded(child: movie('INCEPTION.jpg', 'Inception')),
-
-                  Expanded(child: movie('Interstellar.jpg', 'interstellar')),
-                  Expanded(child: movie('scent.jpg', 'scent of a woman'))
-        ]),
+                    children:screenMovies ),
               ),
             ],
           ),)
@@ -77,11 +100,13 @@ class HomePage extends StatelessWidget {
   }
 }
 
+
 class movie extends StatelessWidget {
-  movie(this.ImageName, this.movieName);
+  movie(this.ImageName, this.movieName,this.story);
 
   String ImageName;
   String movieName;
+  String story;
 
   @override
   Widget build(BuildContext context) {
@@ -96,14 +121,14 @@ class movie extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            moveScreen(ImageName, movieName)));
+                            moveScreen(movieName, ImageName,story)));
               },
               child: Hero(
                 tag: movieName,
                 child: AspectRatio(
                   aspectRatio: 4/3.3,
                   child: Image(
-                    image: AssetImage('images/$ImageName'),
+                    image: NetworkImage('https://image.tmdb.org/t/p/w500$ImageName'),
                     fit: BoxFit.fill,
                   ),
                 ),
@@ -122,3 +147,5 @@ class movie extends StatelessWidget {
     );
   }
 }
+
+

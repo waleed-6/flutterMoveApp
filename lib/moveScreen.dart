@@ -3,10 +3,10 @@ import 'package:super_hero/super_hero.dart';
 
 
 class moveScreen extends StatelessWidget {
- moveScreen(this.movepic,this.moveName);
- String movepic;
+ moveScreen(this.moveName,this.picpth,this.overview);
  String moveName;
-
+ String picpth;
+ String overview;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,8 @@ class moveScreen extends StatelessWidget {
             Hero(
               tag: moveName,
               child: Container(
-                child: Image(image:AssetImage('images/$movepic'),
+                child: Image(
+                  image: NetworkImage('https://image.tmdb.org/t/p/w500$picpth'),
                 height: height/2,
                 width: width,
                 fit: BoxFit.fill,
@@ -45,25 +46,13 @@ class moveScreen extends StatelessWidget {
               height: 20*scall,
             ),
 
-            Text(
-            'there should be text here to Explain the story of movie',
-
+            Text(overview,
                 style: TextStyle(
                 fontSize: 13,
                 color: Colors.white,
                 ),
 
          ),
-            SizedBox(
-              height: 20*scall,
-            ),
-            Text(superHero,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.white,
-              ),
-
-            )
           ],
         ),
       )
